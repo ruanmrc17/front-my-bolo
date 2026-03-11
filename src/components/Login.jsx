@@ -8,7 +8,7 @@ export default function Login({ navigate, onLogin }) {
     e.preventDefault();
     
     // Validação da senha direto no frontend!
-    if (senha === '123') {
+    if (senha === '2468') {
       onLogin(); // Chama a função no App.jsx para buscar o token
     } else {
       alert('Senha incorreta! Dica: a senha é 123');
