@@ -1,0 +1,184 @@
+/* src/App.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #fdf2f8; /* Fundo rosa bem clarinho */
+  color: #334155;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  background: white;
+  width: 100%;
+  max-width: 800px; /* 👈 Aumentamos a largura aqui! */
+  min-height: 600px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Títulos */
+h1, h2 {
+  color: #db2777; /* Rosa forte cereja */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Botões */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.btn-primary {
+  background-color: #ec4899; /* Rosa principal */
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #db2777;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid #ec4899;
+  color: #ec4899;
+}
+
+.btn-outline:hover {
+  background-color: #fce7f3;
+}
+
+.btn-back {
+  background-color: transparent;
+  color: #94a3b8;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  text-decoration: underline;
+}
+
+/* Inputs */
+.input-group {
+  margin-bottom: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #fbcfe8;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  transition: border 0.3s;
+  background-color: white;
+  color: black;
+}
+
+input:focus {
+  border-color: #ec4899;
+}
+
+/* Lista de Alunos (Dashboard) */
+.search-bar {
+  margin-bottom: 20px;
+}
+
+/* Container de cada aluno com a linha divisória */
+.student-card {
+  display: flex;
+  justify-content: space-between; /* Empurra as informações para os lados */
+  align-items: center;
+  padding: 20px 0; /* Espaço em cima e embaixo para respirar */
+  border-bottom: 2px solid #fce7f3; /* 👈 Aqui está o seu divisor! (um rosa clarinho) */
+  flex-wrap: wrap; /* Garante que os botões caiam pra linha de baixo se a tela for pequena */
+  gap: 15px;
+}
+
+/* Remove o divisor do último aluno da lista para ficar com acabamento perfeito */
+.student-card:last-child {
+  border-bottom: none;
+}
+
+.student-info h4 {
+  margin: 0 0 5px 0;
+  color: #db2777;
+}
+
+.student-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+
+
+.student-actions {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* 👈 Cria um espaço bem grande entre os pontos e os botões */
+}
+
+/* O texto dos pontos */
+.student-points {
+  font-size: 20px; /* Letra maior */
+  font-weight: 900; /* Bem negrito */
+  color: white; /* Texto branco pra contrastar */
+  background-color: #ec4899; /* Fundo rosa principal */
+  padding: 10px 20px; /* Espaço dentro do balãozinho */
+  border-radius: 12px; /* Bordas arredondadas */
+  text-align: center;
+  margin-bottom: 0; 
+  min-width: 80px; /* Garante que o tamanho não pisque ao mudar de 9 pra 10 */
+  box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); /* Sombra charmosa */
+}
+/* O grupo de botões (+1 e Zerar) */
+.action-buttons {
+  display: flex;
+  gap: 15px; /* 👈 Espaço entre os dois botões */
+}
+
+/* Deixando os botões um pouquinho maiores e mais bonitos */
+.btn-add {
+  background-color: #10b981; 
+  color: white;
+  padding: 8px 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-add:active {
+  transform: scale(0.95); /* Dá um efeitinho de clique */
+}
+
+.btn-reset {
+  background-color: #ef4444; 
+  color: white;
+  padding: 8px 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
