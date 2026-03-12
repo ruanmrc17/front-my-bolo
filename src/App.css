@@ -140,7 +140,7 @@ input:focus {
 
 /* O texto dos pontos */
 .student-points {
-  font-size: 20px; /* Letra maior */
+  font-size: 15px; /* Letra maior */
   font-weight: 900; /* Bem negrito */
   color: white; /* Texto branco pra contrastar */
   background-color: #ec4899; /* Fundo rosa principal */
@@ -148,7 +148,7 @@ input:focus {
   border-radius: 12px; /* Bordas arredondadas */
   text-align: center;
   margin-bottom: 0; 
-  min-width: 80px; /* Garante que o tamanho não pisque ao mudar de 9 pra 10 */
+  min-width: 50px; /* Garante que o tamanho não pisque ao mudar de 9 pra 10 */
   box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); /* Sombra charmosa */
 }
 /* O grupo de botões (+1 e Zerar) */

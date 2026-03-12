@@ -20,7 +20,7 @@ export default function Login({ navigate, onLogin }) {
       <button className="btn-back" onClick={() => navigate('home')}>
         ← Voltar
       </button>
-      <h2>Entrar no Sistema</h2>
+      <h2>Entrar no Sistema do My Bolo</h2>
       
       <form onSubmit={handleSubmit}>
         <div className="input-group">

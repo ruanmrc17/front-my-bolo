@@ -2,7 +2,7 @@
 export default function Home({ navigate }) {
   return (
     <div style={{ marginTop: '50px' }}>
-      <h1>Bem-vindo</h1>
+      <h1>Bem-vindo ao My Bolo</h1>
       <p style={{ textAlign: 'center', marginBottom: '40px' }}>
         Sistema de Gestão de Alunos
       </p>

@@ -6,51 +6,43 @@ import Register from './components/Register';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 
+const API_URL = "http://localhost:5000"; // Lembre de mudar para o link do Render depois!
+
 function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [students, setStudents] = useState([]);
-  
-  // Guardamos o token no estado, buscando do localStorage
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
-  // BUSCAR ALUNOS: Agora só busca se existir um token
   useEffect(() => {
     if (token) {
-      setCurrentScreen('dashboard'); // Persistência: se tem token, vai pro dashboard
-      
-      fetch('https://back-my-bolo.onrender.com/alunos', {
+      setCurrentScreen('dashboard');
+      fetch(`${API_URL}/alunos`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(resposta => {
-          if (!resposta.ok) throw new Error('Token inválido ou expirado');
+          if (!resposta.ok) throw new Error('Token inválido');
           return resposta.json();
         })
         .then(dados => setStudents(dados))
         .catch(erro => {
-          console.error("Erro ao buscar alunos:", erro);
+          console.error(erro);
           handleLogout();
         });
     }
   }, [token]);
 
-  // FUNÇÃO DE LOGIN (Chamada quando a senha 123 estiver correta)
   const handleLogin = async () => {
     try {
-      // Pede um token genérico ao backend
-      const resposta = await fetch('https://back-my-bolo.onrender.com/login', {
-        method: 'POST',
-      });
-
+      const resposta = await fetch(`${API_URL}/login`, { method: 'POST' });
       const dados = await resposta.json();
 
       if (resposta.ok) {
         setToken(dados.token); 
-        localStorage.setItem('token', dados.token); // Salva no navegador
-        setCurrentScreen('dashboard'); // Muda para o dashboard
+        localStorage.setItem('token', dados.token);
+        setCurrentScreen('dashboard');
       }
     } catch (erro) {
-      alert('Erro de conexão com o servidor.');
-      console.error(erro);
+      alert('Erro de conexão.');
     }
   };
 
@@ -63,7 +55,7 @@ function App() {
 
   const handleRegister = async (student) => {
     try {
-      const resposta = await fetch('https://back-my-bolo.onrender.com/alunos', {
+      const resposta = await fetch(`${API_URL}/alunos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -72,7 +64,6 @@ function App() {
           pontos: 0
         })
       });
-      
       const novoAluno = await resposta.json();
       setStudents([...students, novoAluno]);
       alert('Aluno cadastrado com sucesso!');
@@ -82,15 +73,15 @@ function App() {
     }
   };
 
-  const handleUpdatePoints = async (id, newPoints) => {
+  const handleUpdateStudent = async (id, dadosAtualizados) => {
     try {
-      const resposta = await fetch(`https://back-my-bolo.onrender.com/alunos/${id}`, {
+      const resposta = await fetch(`${API_URL}/alunos/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ pontos: newPoints })
+        body: JSON.stringify(dadosAtualizados) 
       });
 
       if (resposta.ok) {
@@ -100,7 +91,30 @@ function App() {
         ));
       }
     } catch (erro) {
-      console.error("Erro ao atualizar pontos:", erro);
+      console.error("Erro ao atualizar aluno:", erro);
+    }
+  };
+
+  // 🗑️ NOVA FUNÇÃO: Deletar Aluno
+  const handleDeleteStudent = async (id) => {
+    // Confirmação de segurança para não apagar sem querer
+    const confirmacao = window.confirm("Tem certeza que deseja excluir este aluno?");
+    if (!confirmacao) return;
+
+    try {
+      const resposta = await fetch(`${API_URL}/alunos/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (resposta.ok) {
+        // Tira o aluno da lista da tela
+        setStudents(students.filter(student => student._id !== id));
+      } else {
+        alert("Erro ao excluir aluno.");
+      }
+    } catch (erro) {
+      console.error("Erro ao excluir aluno:", erro);
     }
   };
 
@@ -113,7 +127,8 @@ function App() {
         <Dashboard 
           navigate={setCurrentScreen} 
           students={students} 
-          updatePoints={handleUpdatePoints} 
+          updateStudent={handleUpdateStudent} 
+          deleteStudent={handleDeleteStudent} // 👈 Passando a nova função pro Dashboard
           onLogout={handleLogout} 
         />
       )}

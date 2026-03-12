@@ -1,20 +1,34 @@
 // src/components/Dashboard.jsx
 import { useState } from 'react';
 
-// Recebendo a prop onLogout
-export default function Dashboard({ navigate, students, updatePoints, onLogout }) {
+// 👉 Recebemos a função deleteStudent
+export default function Dashboard({ navigate, students, updateStudent, deleteStudent, onLogout }) {
   const [search, setSearch] = useState('');
+  
+  const [editingId, setEditingId] = useState(null);
+  const [editNome, setEditNome] = useState('');
+  const [editMatricula, setEditMatricula] = useState('');
 
   const filteredStudents = students.filter(student => 
     student.nome.toLowerCase().includes(search.toLowerCase()) || 
     student.matricula.includes(search)
   );
 
+  const startEditing = (student) => {
+    setEditingId(student._id);
+    setEditNome(student.nome);
+    setEditMatricula(student.matricula);
+  };
+
+  const saveEdit = (id) => {
+    updateStudent(id, { nome: editNome, matricula: editMatricula });
+    setEditingId(null); 
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Dashboard</h2>
-        {/* 👈 Alterado para chamar onLogout ao invés de só trocar de tela */}
+        <h2>My Bolo</h2>
         <button className="btn-back" onClick={onLogout}>Sair</button>
       </div>
 
@@ -41,25 +55,70 @@ export default function Dashboard({ navigate, students, updatePoints, onLogout }
         ) : (
           filteredStudents.map(student => (
             <div key={student._id} className="student-card">
-              <div className="student-info">
-                <h4>{student.nome}</h4>
-                <p>Matrícula: {student.matricula}</p>
-              </div>
+              
+              {editingId === student._id ? (
+                <div className="student-info" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <input 
+                    type="text" 
+                    value={editNome} 
+                    onChange={(e) => setEditNome(e.target.value)} 
+                    placeholder="Nome"
+                  />
+                  <input 
+                    type="text" 
+                    value={editMatricula} 
+                    onChange={(e) => setEditMatricula(e.target.value)} 
+                    placeholder="Matrícula"
+                  />
+                  <div style={{ display: 'flex', gap: '5px', marginTop: '5px', flexWrap: 'wrap' }}>
+                    <button className="btn-add" onClick={() => saveEdit(student._id)}>Salvar</button>
+                    <button className="btn-reset" onClick={() => setEditingId(null)}>Cancelar</button>
+                    {/* 🗑️ NOVO BOTÃO DE EXCLUIR */}
+                    <button 
+                      className="btn-reset" 
+                      style={{ backgroundColor: '#791919' }} // Cor vermelha para indicar atenção
+                      onClick={() => deleteStudent(student._id)}
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="student-info">
+                  <h4>{student.nome}</h4>
+                  <p>Matrícula: {student.matricula}</p>
+                  <button 
+                    style={{ background: 'none', borderBottom: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', padding: 0, marginTop: '5px', textDecoration: 'underline' }}
+                    onClick={() => startEditing(student)}
+                  >
+                    Editar dados
+                  </button>
+                </div>
+              )}
               
               <div className="student-actions">
                 <div className="student-points">
                   {student.pontos} pts
                 </div>
-                <div className="action-buttons">
+                <div className="action-buttons" style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                   <button 
                     className="btn-add"
-                    onClick={() => updatePoints(student._id, student.pontos + 1)}
+                    onClick={() => updateStudent(student._id, { pontos: student.pontos + 1 })}
                   >
-                    +1 Ponto
+                    +1
                   </button>
                   <button 
                     className="btn-reset"
-                    onClick={() => updatePoints(student._id, 0)} 
+                    style={{ backgroundColor: '#f59e0b' }} 
+                    onClick={() => {
+                      if(student.pontos > 0) updateStudent(student._id, { pontos: student.pontos - 1 })
+                    }}
+                  >
+                    -1
+                  </button>
+                  <button 
+                    className="btn-reset"
+                    onClick={() => updateStudent(student._id, { pontos: 0 })} 
                   >
                     Zerar
                   </button>
