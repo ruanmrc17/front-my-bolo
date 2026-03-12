@@ -19,11 +19,11 @@ body {
 .app-container {
   background: white;
   width: 100%;
-  max-width: 800px; /* 👈 Aumentamos a largura aqui! */
+  max-width: 350px; /* 👈 Aumentamos a largura aqui! */
   min-height: 600px;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(236, 72, 153, 0.15);
-  padding: 30px;
+  padding: 25px;
   position: relative;
   overflow: hidden;
 }
