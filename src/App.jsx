@@ -6,7 +6,7 @@ import Register from './components/Register';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 
-const API_URL = "http://localhost:5000"; // Lembre de mudar para o link do Render depois!
+const API_URL = "https://back-my-bolo.onrender.com"; // Lembre de mudar para o link do Render depois!
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
