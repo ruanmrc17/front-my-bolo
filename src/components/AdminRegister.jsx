@@ -72,7 +72,7 @@ export default function AdminRegister({ navigate, onAddTransaction }) {
           <label>Descrição:</label>
           <input 
             type="text" 
-            placeholder={tipo === 'custo' ? 'Ex: Farinha, Ovos...' : 'Ex: Mensalidade, Venda...'} 
+            placeholder={tipo === 'custo' ? 'Ex: Farinha, Ovos...' : 'Ex: Bolo de Cenoura...'} 
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             required
