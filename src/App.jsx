@@ -6,16 +6,27 @@ import Register from './components/Register';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 
-const API_URL = "https://back-my-bolo.onrender.com"; // Lembre de mudar para o link do Render depois!
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import AdminRegister from './components/AdminRegister';
+
+const API_URL = "http://localhost:5000"; // Lembre de mudar para o link do Render depois!
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('home');
   const [students, setStudents] = useState([]);
+  const [transactions, setTransactions] = useState([]); 
   const [token, setToken] = useState(localStorage.getItem('token') || null);
+  
+  // 🆕 NOVA MEMÓRIA: Guarda se quem está logado é o Administrador
+  const [isAdmin, setIsAdmin] = useState(localStorage.getItem('isAdmin') === 'true');
 
   useEffect(() => {
     if (token) {
-      setCurrentScreen('dashboard');
+      // 👈 A mágica acontece aqui: Se for Admin, vai pro painel financeiro. Se não, vai pros alunos.
+      setCurrentScreen(isAdmin ? 'adminDashboard' : 'dashboard');
+      
+      // Busca os alunos
       fetch(`${API_URL}/alunos`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -28,9 +39,18 @@ function App() {
           console.error(erro);
           handleLogout();
         });
-    }
-  }, [token]);
 
+      // Busca as transações financeiras
+      fetch(`${API_URL}/transacoes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(resposta => resposta.json())
+        .then(dados => setTransactions(dados))
+        .catch(erro => console.error("Erro ao buscar transações:", erro));
+    }
+  }, [token, isAdmin]);
+
+  // LOGIN DO ALUNO
   const handleLogin = async () => {
     try {
       const resposta = await fetch(`${API_URL}/login`, { method: 'POST' });
@@ -39,17 +59,46 @@ function App() {
       if (resposta.ok) {
         setToken(dados.token); 
         localStorage.setItem('token', dados.token);
+        
+        // 👈 Salva que NÃO é administrador
+        localStorage.setItem('isAdmin', 'false');
+        setIsAdmin(false);
         setCurrentScreen('dashboard');
+      } else {
+        alert(dados.error);
       }
     } catch (erro) {
-      alert('Erro de conexão.');
+      alert("Erro ao conectar ao servidor.");
+    }
+  };
+
+  // 🆕 LOGIN DA ADMINISTRAÇÃO
+  const handleAdminLogin = async () => {
+    try {
+      const resposta = await fetch(`${API_URL}/login`, { method: 'POST' });
+      const dados = await resposta.json();
+
+      if (resposta.ok) {
+        setToken(dados.token); 
+        localStorage.setItem('token', dados.token);
+        
+        // 👈 Salva que É O ADMINISTRADOR
+        localStorage.setItem('isAdmin', 'true');
+        setIsAdmin(true);
+        setCurrentScreen('adminDashboard');
+      } else {
+        alert(dados.error);
+      }
+    } catch (erro) {
+      alert("Erro ao conectar ao servidor.");
     }
   };
 
   const handleLogout = () => {
     setToken(null);
     localStorage.removeItem('token');
-    setStudents([]);
+    localStorage.removeItem('isAdmin'); // 👈 Limpa a memória de admin ao sair
+    setIsAdmin(false);
     setCurrentScreen('home');
   };
 
@@ -57,19 +106,20 @@ function App() {
     try {
       const resposta = await fetch(`${API_URL}/alunos`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: student.nome,
-          matricula: student.matricula,
-          pontos: 0
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(student)
       });
-      const novoAluno = await resposta.json();
-      setStudents([...students, novoAluno]);
-      alert('Aluno cadastrado com sucesso!');
-      setCurrentScreen('dashboard');
+
+      if (resposta.ok) {
+        const novoAlunoSalvo = await resposta.json();
+        setStudents([...students, novoAlunoSalvo]);
+        setCurrentScreen('dashboard');
+      }
     } catch (erro) {
-      alert('Erro ao cadastrar aluno!');
+      console.error("Erro ao cadastrar:", erro);
     }
   };
 
@@ -77,11 +127,11 @@ function App() {
     try {
       const resposta = await fetch(`${API_URL}/alunos/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(dadosAtualizados) 
+        body: JSON.stringify(dadosAtualizados)
       });
 
       if (resposta.ok) {
@@ -95,9 +145,7 @@ function App() {
     }
   };
 
-  // 🗑️ NOVA FUNÇÃO: Deletar Aluno
   const handleDeleteStudent = async (id) => {
-    // Confirmação de segurança para não apagar sem querer
     const confirmacao = window.confirm("Tem certeza que deseja excluir este aluno?");
     if (!confirmacao) return;
 
@@ -108,13 +156,98 @@ function App() {
       });
 
       if (resposta.ok) {
-        // Tira o aluno da lista da tela
         setStudents(students.filter(student => student._id !== id));
-      } else {
-        alert("Erro ao excluir aluno.");
       }
     } catch (erro) {
       console.error("Erro ao excluir aluno:", erro);
+    }
+  };
+
+  // --- FUNÇÕES DA ADMINISTRAÇÃO ---
+  const handleAddTransaction = async (novaTransacao) => {
+    try {
+      const resposta = await fetch(`${API_URL}/transacoes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(novaTransacao)
+      });
+
+      if (resposta.ok) {
+        const transacaoSalva = await resposta.json();
+        setTransactions([...transactions, transacaoSalva]);
+        setCurrentScreen('adminDashboard');
+      } else {
+        alert("Erro ao salvar o registro financeiro.");
+      }
+    } catch (erro) {
+      console.error("Erro ao salvar transação:", erro);
+    }
+  };
+
+  const handleDeleteTransaction = async (id) => {
+    const confirmacao = window.confirm("Deseja mesmo excluir este registro financeiro?");
+    if (!confirmacao) return;
+
+    try {
+      const resposta = await fetch(`${API_URL}/transacoes/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (resposta.ok) {
+        setTransactions(transactions.filter(t => t._id !== id));
+      } else {
+        alert("Erro ao excluir registro.");
+      }
+    } catch (erro) {
+      console.error("Erro ao excluir transação:", erro);
+    }
+  };
+
+  const handleUpdateTransaction = async (id, dadosAtualizados) => {
+    try {
+      const resposta = await fetch(`${API_URL}/transacoes/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dadosAtualizados)
+      });
+
+      if (resposta.ok) {
+        const transacaoAtualizada = await resposta.json();
+        setTransactions(transactions.map(t => 
+          t._id === id ? transacaoAtualizada : t
+        ));
+      } else {
+        alert("Erro ao atualizar o registro.");
+      }
+    } catch (erro) {
+      console.error("Erro ao atualizar transação:", erro);
+    }
+  };
+
+  // 🆕 NOVA: Deletar tudo de um Mês
+  const handleDeleteMonthTransactions = async (anoMes) => {
+    try {
+      const resposta = await fetch(`${API_URL}/transacoes/mes/${anoMes}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (resposta.ok) {
+        // Remove da tela tudo que começa com aquele mês (ex: "2026-03")
+        setTransactions(transactions.filter(t => !t.data.startsWith(anoMes)));
+        alert('Dados do mês apagados com sucesso!');
+      } else {
+        alert("Erro ao apagar dados do mês.");
+      }
+    } catch (erro) {
+      console.error("Erro ao excluir mês:", erro);
     }
   };
 
@@ -123,13 +256,37 @@ function App() {
       {currentScreen === 'home' && <Home navigate={setCurrentScreen} />}
       {currentScreen === 'register' && <Register navigate={setCurrentScreen} onRegister={handleRegister} />}
       {currentScreen === 'login' && <Login navigate={setCurrentScreen} onLogin={handleLogin} />}
+      
       {currentScreen === 'dashboard' && (
         <Dashboard 
           navigate={setCurrentScreen} 
           students={students} 
           updateStudent={handleUpdateStudent} 
-          deleteStudent={handleDeleteStudent} // 👈 Passando a nova função pro Dashboard
+          deleteStudent={handleDeleteStudent} 
           onLogout={handleLogout} 
+        />
+      )}
+
+      {/* 👈 Passando o handleAdminLogin para a tela de login da Administração */}
+      {currentScreen === 'adminLogin' && (
+        <AdminLogin navigate={setCurrentScreen} onLogin={handleAdminLogin} />
+      )}
+      
+      {currentScreen === 'adminDashboard' && (
+        <AdminDashboard 
+          navigate={setCurrentScreen} 
+          transactions={transactions} 
+          onLogout={handleLogout} 
+          onDeleteTransaction={handleDeleteTransaction}
+          onUpdateTransaction={handleUpdateTransaction}        // 👈 NOVA
+          onDeleteMonthTransactions={handleDeleteMonthTransactions} // 👈 NOVA
+        />
+      )}
+      
+      {currentScreen === 'adminRegister' && (
+        <AdminRegister 
+          navigate={setCurrentScreen} 
+          onAddTransaction={handleAddTransaction} 
         />
       )}
     </div>
